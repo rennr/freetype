@@ -106,11 +106,112 @@
 
 #define MAX_LENGTH  128
 
+  FT_EXPORT_DEF( void )
+  FT_Set_Custom_Geometry( FT_Library  library )
+  {
+    const char*  env;
+    const char*  p;
+
+    int vecr_x = 0;
+    int vecr_y = 0;
+    int vecg_x = 0;
+    int vecg_y = 0;
+    int vecb_x = 0;
+    int vecb_y = 0;
+
+    char  buffer[MAX_LENGTH + 1];
+
+    int negative = 0;
+    int vector_index = 0;
+    int i = 0;
+    int val = 0;
+
+    env = ft_getenv( "FREETYPE_CUSTOM_GEOMETRY" );
+    if ( !env ) {
+      FT_TRACE0(("No FREETYPE_CUSTOM_GEOMETRY\n"));
+      return;
+    }
+      
+    for ( p = env; ; p++ )
+    {
+      FT_TRACE0(("FTCG: %c\n", *p));
+
+      /* skip leading whitespace and separators */
+      if ( *p == ' ' || *p == '\t' )
+        continue;
+
+      /* Read vector data */
+      if ( *p == '-') {
+        negative = 1;
+        continue;
+      }
+
+      if ( *p == ',' || !*p ) {
+        buffer[i] = '\0';
+        val = atoi(buffer);
+
+        if (negative != 0) {
+          val = -val;
+        }
+
+        negative = 0;
+        i = 0;
+        
+        if (vector_index == 0)
+          vecr_x = val;
+        else if (vector_index == 1)
+          vecr_y = val;
+        else if (vector_index == 2)
+          vecg_x = val;
+        else if (vector_index == 3)
+          vecg_y = val;
+        else if (vector_index == 4)
+          vecb_x = val;
+        else if (vector_index == 5)
+          vecb_y = val;
+        else
+          break;
+
+        if (!*p)
+          break;
+
+        vector_index++;
+
+        continue;
+      }
+
+      if (!*p)
+        break;
+
+      buffer[i++] = *p;
+    }
+
+    FT_TRACE0(("FREETYPE_CUSTOM_GEOMETRY: %d,%d %d,%d %d,%d\n", 
+      vecr_x, vecr_y,
+      vecg_x, vecg_y,
+      vecb_x, vecb_y));
+
+    //R
+    library->lcd_geometry[0].x = vecr_x;
+    library->lcd_geometry[0].y = vecr_y;
+
+    //G
+    library->lcd_geometry[1].x = vecg_x;
+    library->lcd_geometry[1].y = vecg_y;
+
+    //B
+    library->lcd_geometry[2].x = vecb_x;
+    library->lcd_geometry[2].y = vecb_y;
+  }
+
   /* documentation is in ftmodapi.h */
 
   FT_EXPORT_DEF( void )
   FT_Set_Default_Properties( FT_Library  library )
   {
+    
+    FT_Set_Custom_Geometry(library);
+
     const char*  env;
     const char*  p;
     const char*  q;
