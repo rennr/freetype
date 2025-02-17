@@ -522,6 +522,9 @@ FT_BEGIN_HEADER
   FT_EXPORT( void )
   FT_Set_Default_Properties( FT_Library  library );
 
+  FT_EXPORT( void )
+  FT_Set_Custom_Geometry( FT_Library  library );
+
 
   /**************************************************************************
    *
